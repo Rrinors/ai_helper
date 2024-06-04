@@ -1,34 +1,47 @@
-package db_test
+package db
 
 import (
-	"ai_helper/biz/db"
 	"ai_helper/package/constant"
-	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/bytedance/sonic"
 )
 
 func TestCreateTask(t *testing.T) {
-	db.Init()
+	Init()
 	userId := uint64(1)
 	moduleType := constant.Qwen
 	inputUrl := "test_input.json"
 	outputUrl := "test_output.json"
-	task, err := db.CreateTask(userId, moduleType, inputUrl, outputUrl)
+	task, err := CreateTask(userId, moduleType, inputUrl, outputUrl)
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp, _ := json.Marshal(task)
+	resp, _ := sonic.Marshal(task)
 	fmt.Println(string(resp))
 }
 
 func TestLimitedFetchPendingTasks(t *testing.T) {
-	db.Init()
-	tasks, err := db.LimitedFetchPendingTasks(constant.Qwen, 10)
+	Init()
+	tasks, err := LimitedFetchPendingTasks(constant.Qwen, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, task := range tasks {
 		fmt.Printf("fetch task %v\n", task.Id)
+	}
+}
+
+func TestUpdateTask(t *testing.T) {
+	Init()
+	var task Task
+	if err := DB.Model(Task{}).Where("id = ?", 1).First(&task).Error; err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("%v\n", task)
+	task.Status = constant.TaskPending
+	if err := UpdateTask(&task); err != nil {
+		t.Fatal(err)
 	}
 }

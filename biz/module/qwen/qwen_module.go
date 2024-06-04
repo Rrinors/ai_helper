@@ -27,6 +27,7 @@ func (m *QwenModule) HandleTaskReq(task *db.Task) {
 }
 
 func (m *QwenModule) ProcessTask(task *db.Task) {
+	log.Info("start process task %v", task.Id)
 	var err error
 	defer func() {
 		result := qwenResult{
@@ -48,7 +49,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 	}
 	headers := map[string]string{
 		"Content-Type":  "application/json",
-		"Authorization": user.QwenApiKey,
+		"Authorization": "Bearer " + user.QwenApiKey,
 	}
 
 	url := config.ModuleReqUrlMap[constant.Qwen]

@@ -6,6 +6,7 @@ import (
 	"ai_helper/package/config"
 	"ai_helper/package/constant"
 	"ai_helper/package/log"
+	"ai_helper/package/util"
 	"time"
 )
 
@@ -22,8 +23,10 @@ func Init() {
 		constant.Qwen: qwen.NewQwenModule(),
 	}
 	for k, v := range ModuleMap {
-		go v.HandleTaskResult()
-		go dispatchTask(k)
+		util.GoSafe(v.HandleTaskResult)
+		util.GoSafe(func() {
+			dispatchTask(k)
+		})
 	}
 }
 
@@ -32,12 +35,15 @@ func dispatchTask(moduleType int) {
 	module := ModuleMap[moduleType]
 	for {
 		time.Sleep(config.DBFetchInterval)
-		tasks, err := db.LimitedFetchPendingTasks(moduleType, concurrency)
+		tasks, err := db.LimitedFetchPendingTasks(moduleType, 2*concurrency)
 		if err != nil {
 			log.Error("fetch %v tasks failed: err=%v", moduleType, err)
 			continue
 		}
+		log.Info("fetch %v pending tasks", len(tasks))
 		for _, task := range tasks {
+			task.Status = constant.TaskRunning
+			db.UpdateTask(task)
 			module.HandleTaskReq(task)
 		}
 	}

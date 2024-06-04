@@ -1,7 +1,6 @@
-package util_test
+package util
 
 import (
-	"ai_helper/package/util"
 	"fmt"
 	"sync"
 	"testing"
@@ -9,7 +8,7 @@ import (
 )
 
 func TestThreadPool(t *testing.T) {
-	threadPool := util.NewThreadPool(4)
+	threadPool := NewThreadPool(4)
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
