@@ -19,7 +19,7 @@ func NewThreadPool(threadNum int) *ThreadPool {
 		queue: make(chan func()),
 	}
 	for i := 0; i < threadNum; i++ {
-		go p.worker()
+		GoSafe(p.worker)
 	}
 	return p
 }

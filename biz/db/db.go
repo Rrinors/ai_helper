@@ -12,20 +12,20 @@ import (
 )
 
 type Task struct {
-	Id           uint64 `gorm:"primaryKey;autoIncrement"`
-	UserId       uint64 `gorm:"index;notNull"`
-	ModuleType   int    `gorm:"index;notNull"`
-	Status       int    `gorm:"index;notNull"`
-	InputUrl     string
-	OutputUrl    string
-	CreatedTime  time.Time
-	FinishedTime time.Time
+	Id           uint64    `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserId       uint64    `gorm:"index;notNull" json:"user_id"`
+	ModuleType   int       `gorm:"index;notNull" json:"module_type"`
+	Status       int       `gorm:"index;notNull" json:"status"`
+	InputUrl     string    `json:"input_url"`
+	OutputUrl    string    `json:"output_url"`
+	CreatedTime  time.Time `json:"created_time"`
+	FinishedTime time.Time `json:"finished_time"`
 }
 
 type User struct {
-	Id         uint64 `gorm:"primaryKey;autoIncrement"`
-	Name       string `gorm:"index;notNull"`
-	QwenApiKey string
+	Id         uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name       string `gorm:"index;notNull" json:"name"`
+	QwenApiKey string `json:"qwen_api_key"`
 }
 
 var DB *gorm.DB

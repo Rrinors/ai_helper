@@ -3,9 +3,10 @@ package db_test
 import (
 	"ai_helper/biz/db"
 	"ai_helper/package/constant"
-	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/bytedance/sonic"
 )
 
 func TestCreateTask(t *testing.T) {
@@ -18,7 +19,7 @@ func TestCreateTask(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp, _ := json.Marshal(task)
+	resp, _ := sonic.Marshal(task)
 	fmt.Println(string(resp))
 }
 

@@ -16,7 +16,7 @@ const qwenInput = `{
             },
             {
                 "role": "user",
-                "content": "西红柿炒蛋的做法"
+                "content": "你和GPT4、文心一言、kimi助手比谁更厉害？"
             }
         ]
     }
