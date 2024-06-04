@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -11,25 +12,18 @@ import (
 type LogLevel int
 
 const (
-	// DebugLevel logs are typically voluminous, and are usually disabled in
-	// production.
-	DebugLevel LogLevel = iota
-	// InfoLevel is the default logging priority.
-	InfoLevel
-	// ErrorLevel is high priority.
-	ErrorLevel
-	// FatalLevel is used to log fatal errors, which will cause the program to exit.
-	FatalLevel
+	DebugLevel LogLevel = iota // DebugLevel logs are typically voluminous, and are usually disabled in production.
+	InfoLevel                  // InfoLevel is the default logging priority.
+	ErrorLevel                 // ErrorLevel is high priority.
+	FatalLevel                 // FatalLevel is used to log fatal errors, which will cause the program to exit.
 )
 
 var (
-	// currentLevel holds the current logging level
-	currentLevel LogLevel
-	// lock is used to ensure thread-safe access to the logger
-	lock sync.Mutex
+	currentLevel LogLevel       // currentLevel holds the current logging level
+	lock         sync.Mutex     // lock is used to ensure thread-safe access to the logger
 )
 
-// SetLevel sets the logging level
+// SetLevel sets the logging level.
 func SetLevel(level LogLevel) {
 	lock.Lock()
 	defer lock.Unlock()
@@ -63,6 +57,12 @@ func log(level LogLevel, label, format string, v ...interface{}) {
 	defer lock.Unlock()
 
 	if currentLevel <= level {
-		fmt.Fprintf(os.Stdout, "%s [%s] %s\n", time.Now().Format("2006-01-02 15:04:05"), label, fmt.Sprintf(format, v...))
+		pc, file, line, ok := runtime.Caller(2)
+		if !ok {
+			file = "???"
+			line = 0
+		}
+		funcName := runtime.FuncForPC(pc).Name()
+		fmt.Fprintf(os.Stdout, "%s [%s] (%s:%d %s) %s\n", time.Now().Format("2006-01-02 15:04:05"), label, file, line, funcName, fmt.Sprintf(format, v...))
 	}
 }

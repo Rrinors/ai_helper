@@ -1,7 +1,6 @@
-package minio_test
+package minio
 
 import (
-	"ai_helper/biz/minio"
 	"fmt"
 	"testing"
 )
@@ -23,10 +22,10 @@ const qwenInput = `{
 }`
 
 func TestDownload(t *testing.T) {
-	minio.Init()
+	Init()
 	bucket := "qwen"
 	object := "test_output.json"
-	data, err := minio.DownloadFile(bucket, object)
+	data, err := DownloadFile(bucket, object)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,11 +33,11 @@ func TestDownload(t *testing.T) {
 }
 
 func TestUpload(t *testing.T) {
-	minio.Init()
+	Init()
 	bucket := "qwen"
 	object := "test_input.json"
 	data := []byte(qwenInput)
-	err := minio.UploadFile(bucket, object, data)
+	err := UploadFile(bucket, object, data)
 	if err != nil {
 		t.Fatal(err)
 	}

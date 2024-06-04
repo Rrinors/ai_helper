@@ -50,7 +50,7 @@ func LimitedFetchPendingTasks(moduleType, limit int) ([]*Task, error) {
 }
 
 func UpdateTask(task *Task) error {
-	if err := DB.Model(Task{}).Updates(task).Error; err != nil {
+	if err := DB.Model(Task{}).Where("id = ?", task.Id).Updates(task).Error; err != nil {
 		return err
 	}
 	return nil

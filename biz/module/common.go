@@ -35,13 +35,15 @@ func dispatchTask(moduleType int) {
 	module := ModuleMap[moduleType]
 	for {
 		time.Sleep(config.DBFetchInterval)
-		tasks, err := db.LimitedFetchPendingTasks(moduleType, concurrency)
+		tasks, err := db.LimitedFetchPendingTasks(moduleType, 2*concurrency)
 		if err != nil {
 			log.Error("fetch %v tasks failed: err=%v", moduleType, err)
 			continue
 		}
 		log.Info("fetch %v pending tasks", len(tasks))
 		for _, task := range tasks {
+			task.Status = constant.TaskRunning
+			db.UpdateTask(task)
 			module.HandleTaskReq(task)
 		}
 	}
