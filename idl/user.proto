@@ -1,0 +1,29 @@
+// idl/user.proto
+syntax = "proto3";
+
+package user;
+
+option go_package = "basic/user";
+
+import "api.proto";
+
+message UserApiRequest {
+    uint64 id = 1; // primary key, user id
+    string name = 2; // user name, for register
+    string qwen_api_key = 3; // qwen api-key, for bind
+}
+
+message UserApiResponse {
+    int32 status_code = 1[(api.go_tag)='json:"status_code"'];
+    string status_msg = 2;
+}
+
+service UserApiHandler {
+    rpc RegisterUser(UserApiRequest) returns(UserApiResponse) {
+        option (api.post) = "api/v1/user/register";
+    }
+
+    rpc BindQwenApiKey(UserApiRequest) returns(UserApiResponse) {
+        option (api.post) = "api/v1/user/bind";
+    }
+}

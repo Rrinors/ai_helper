@@ -1,0 +1,29 @@
+// idl/qwen.proto
+syntax = "proto3";
+
+package qwen;
+
+option go_package = "module/qwen";
+
+import "api.proto";
+
+message QwenApiRequest {
+    uint64 id = 1; // primary key, qwen task id
+    uint64 user_id = 2; // user id
+    string input = 3; // input dialogue
+}
+
+message QwenApiResponse {
+    int32 status_code = 1[(api.go_tag)='json:"status_code"'];
+    string status_msg = 2;
+}
+
+service QwenApiHandler {
+    rpc SubmitQwenTask(QwenApiRequest) returns(QwenApiResponse) {
+        option (api.post) = "api/v1/qwen/submit";
+    }
+
+    rpc QueryQwenTask(QwenApiRequest) returns(QwenApiResponse) {
+        option (api.get) = "api/v1/qwen/result";
+    }
+}
