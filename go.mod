@@ -6,6 +6,7 @@ require (
 	github.com/bytedance/sonic v1.11.8
 	github.com/cloudwego/hertz v0.9.1
 	github.com/minio/minio-go/v7 v7.0.70
+	google.golang.org/protobuf v1.27.1
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/gorm v1.25.10
 )
@@ -42,6 +43,5 @@ require (
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )

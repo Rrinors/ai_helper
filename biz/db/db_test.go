@@ -2,6 +2,7 @@ package db
 
 import (
 	"ai_helper/package/constant"
+	"ai_helper/package/util"
 	"fmt"
 	"testing"
 
@@ -44,4 +45,13 @@ func TestUpdateTask(t *testing.T) {
 	if err := UpdateTask(&task); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestGetUserById(t *testing.T) {
+	Init()
+	user, err := GetUserById(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(util.JsonFmt(user))
 }

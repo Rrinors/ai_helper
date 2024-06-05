@@ -58,7 +58,7 @@ func UpdateTask(task *Task) error {
 
 func GetUserById(userId uint64) (*User, error) {
 	var res *User
-	err := DB.Model(User{}).Where("id = ?", userId).First(&res).Error
+	err := DB.Model(User{}).First(&res, "id = ?", userId).Error
 	if err != nil {
 		return nil, err
 	}
@@ -90,4 +90,11 @@ func CreateUser(name string, apiKeyMap map[int]string) (*User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func UpdateUser(user *User) error {
+	if err := DB.Model(User{}).Where("id = ?", user.Id).Updates(user).Error; err != nil {
+		return err
+	}
+	return nil
 }
