@@ -10,7 +10,10 @@ import "api.proto";
 message QwenApiRequest {
     uint64 id = 1; // primary key, qwen task id
     uint64 user_id = 2; // user id
-    string input = 3; // input dialogue
+    string input_model = 3; // input model
+    string input_role = 4; // input role
+    string input_content = 5; // input content
+    int32 history_num = 6; // input history num
 }
 
 message QwenApiResponse {

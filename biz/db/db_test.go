@@ -15,7 +15,7 @@ func TestCreateTask(t *testing.T) {
 	moduleType := constant.Qwen
 	inputUrl := "test_input.json"
 	outputUrl := "test_output.json"
-	task, err := CreateTask(userId, moduleType, inputUrl, outputUrl)
+	task, err := CreateTask(userId, moduleType, inputUrl, outputUrl, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestUpdateTask(t *testing.T) {
 
 func TestGetUserById(t *testing.T) {
 	Init()
-	user, err := GetUserById(1)
+	user, err := FetchUserById(1)
 	if err != nil {
 		t.Fatal(err)
 	}

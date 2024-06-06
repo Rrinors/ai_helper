@@ -8,9 +8,9 @@ import (
 	"fmt"
 )
 
-func RegisterUser(req *user.UserApiRequest) user.UserApiResponse {
+func RegisterUser(req *user.UserApiRequest) *user.UserApiResponse {
 	if req.Name == "" {
-		return user.UserApiResponse{
+		return &user.UserApiResponse{
 			StatusCode: 400,
 			StatusMsg:  "empty name is invalid",
 		}
@@ -23,35 +23,35 @@ func RegisterUser(req *user.UserApiRequest) user.UserApiResponse {
 
 	userDO, err := db.CreateUser(req.Name, apiKeys)
 	if err != nil {
-		return user.UserApiResponse{
+		return &user.UserApiResponse{
 			StatusCode: 500,
 			StatusMsg:  fmt.Sprintf("create user failed: err=%v", err),
 		}
 	}
-	return user.UserApiResponse{
+	return &user.UserApiResponse{
 		StatusCode: 0,
-		StatusMsg:  fmt.Sprintf("create user success: %v", util.JsonFmt(userDO)),
+		StatusMsg:  fmt.Sprintf("register user success: %v", util.JsonFmt(userDO)),
 	}
 }
 
-func BindQwenApiKey(req *user.UserApiRequest) user.UserApiResponse {
+func BindQwenApiKey(req *user.UserApiRequest) *user.UserApiResponse {
 	if req.Id == uint64(0) {
-		return user.UserApiResponse{
+		return &user.UserApiResponse{
 			StatusCode: 400,
 			StatusMsg:  "empty user_id is invalid",
 		}
 	}
 
 	if req.QwenApiKey == "" {
-		return user.UserApiResponse{
+		return &user.UserApiResponse{
 			StatusCode: 400,
 			StatusMsg:  "empty qwen api_key is invalid",
 		}
 	}
 
-	userDO, err := db.GetUserById(req.Id)
+	userDO, err := db.FetchUserById(req.Id)
 	if err != nil {
-		return user.UserApiResponse{
+		return &user.UserApiResponse{
 			StatusCode: 500,
 			StatusMsg:  fmt.Sprintf("get user failed: err=%v", err),
 		}
@@ -60,12 +60,12 @@ func BindQwenApiKey(req *user.UserApiRequest) user.UserApiResponse {
 	userDO.QwenApiKey = req.QwenApiKey
 	err = db.UpdateUser(userDO)
 	if err != nil {
-		return user.UserApiResponse{
+		return &user.UserApiResponse{
 			StatusCode: 500,
 			StatusMsg:  fmt.Sprintf("update user failed: err=%v", err),
 		}
 	}
-	return user.UserApiResponse{
+	return &user.UserApiResponse{
 		StatusCode: 0,
 		StatusMsg:  "bind qwen api_key success",
 	}

@@ -23,7 +23,7 @@ func Register(r *server.Hertz) {
 			_v1 := _api.Group("/v1", _v1Mw()...)
 			{
 				_user := _v1.Group("/user", _userMw()...)
-				_user.POST("/bind", append(_bindqwenapikeyMw(), user.BindQwenApiKey)...)
+				_user.POST("/bind_qwen", append(_bindqwenapikeyMw(), user.BindQwenApiKey)...)
 				_user.POST("/register", append(_registeruserMw(), user.RegisterUser)...)
 			}
 		}

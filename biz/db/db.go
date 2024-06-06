@@ -18,7 +18,8 @@ type Task struct {
 	Status       int       `gorm:"index;notNull" json:"status"`
 	InputUrl     string    `json:"input_url"`
 	OutputUrl    string    `json:"output_url"`
-	CreatedTime  time.Time `json:"created_time"`
+	HistoryNum   int       `json:"history_num"`
+	CreatedTime  time.Time `gorm:"index" json:"created_time"`
 	FinishedTime time.Time `json:"finished_time"`
 }
 
@@ -56,7 +57,7 @@ func UpdateTask(task *Task) error {
 	return nil
 }
 
-func GetUserById(userId uint64) (*User, error) {
+func FetchUserById(userId uint64) (*User, error) {
 	var res *User
 	err := DB.Model(User{}).First(&res, "id = ?", userId).Error
 	if err != nil {
@@ -65,13 +66,14 @@ func GetUserById(userId uint64) (*User, error) {
 	return res, nil
 }
 
-func CreateTask(userId uint64, moduleType int, inputUrl, outputUrl string) (*Task, error) {
+func CreateTask(userId uint64, moduleType int, inputUrl, outputUrl string, history int) (*Task, error) {
 	task := &Task{
 		UserId:       userId,
 		ModuleType:   moduleType,
 		Status:       constant.TaskPending,
 		InputUrl:     inputUrl,
 		OutputUrl:    outputUrl,
+		HistoryNum:   history,
 		CreatedTime:  time.Now(),
 		FinishedTime: time.Unix(0, 0),
 	}
@@ -97,4 +99,13 @@ func UpdateUser(user *User) error {
 		return err
 	}
 	return nil
+}
+
+func FetchUserHistoryTasks(userId uint64, moduleType int, history int) ([]*Task, error) {
+	var res []*Task
+	err := DB.Model(Task{}).Where("module_type = ? AND status = ?", moduleType, constant.TaskSuccess).Order("created_time DESC").Limit(history).Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

@@ -24,6 +24,6 @@ service UserApiHandler {
     }
 
     rpc BindQwenApiKey(UserApiRequest) returns(UserApiResponse) {
-        option (api.post) = "api/v1/user/bind";
+        option (api.post) = "api/v1/user/bind_qwen";
     }
 }

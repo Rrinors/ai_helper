@@ -6,6 +6,9 @@ import (
 	"context"
 
 	qwen "ai_helper/biz/model/module/qwen"
+	"ai_helper/biz/service"
+	"ai_helper/package/log"
+	"ai_helper/package/util"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -22,8 +25,10 @@ func SubmitQwenTask(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(qwen.QwenApiResponse)
+	log.Info("/api/v1/qwen/submit request: %v", util.JsonFmt(&req))
+	resp := service.SubmitQwenTask(&req)
 
+	log.Info("/api/v1/qwen/submit response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -38,7 +43,9 @@ func QueryQwenTask(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(qwen.QwenApiResponse)
+	log.Info("/api/v1/qwen/result request: %v", util.JsonFmt(&req))
+	resp := service.SubmitQwenTask(&req)
 
+	log.Info("/api/v1/qwen/result response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)
 }
