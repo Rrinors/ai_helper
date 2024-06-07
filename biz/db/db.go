@@ -16,9 +16,10 @@ type Task struct {
 	UserId       uint64    `gorm:"index;notNull" json:"user_id"`
 	ModuleType   int       `gorm:"index;notNull" json:"module_type"`
 	Status       int       `gorm:"index;notNull" json:"status"`
+	ModelName    string    `gorm:"index" json:"model_name"`
+	HistoryNum   int       `json:"history_num"`
 	InputUrl     string    `json:"input_url"`
 	OutputUrl    string    `json:"output_url"`
-	HistoryNum   int       `json:"history_num"`
 	CreatedTime  time.Time `gorm:"index" json:"created_time"`
 	FinishedTime time.Time `json:"finished_time"`
 }
@@ -66,14 +67,15 @@ func FetchUserById(userId uint64) (*User, error) {
 	return res, nil
 }
 
-func CreateTask(userId uint64, moduleType int, inputUrl, outputUrl string, history int) (*Task, error) {
+func CreateTask(userId uint64, moduleType int, model string, history int, inputUrl, outputUrl string) (*Task, error) {
 	task := &Task{
 		UserId:       userId,
 		ModuleType:   moduleType,
 		Status:       constant.TaskPending,
+		ModelName:    model,
+		HistoryNum:   history,
 		InputUrl:     inputUrl,
 		OutputUrl:    outputUrl,
-		HistoryNum:   history,
 		CreatedTime:  time.Now(),
 		FinishedTime: time.Unix(0, 0),
 	}
@@ -102,9 +104,12 @@ func UpdateUser(user *User) error {
 }
 
 func FetchUserHistoryTasks(userId uint64, moduleType int, history int) ([]*Task, error) {
+	db := DB.Model(Task{})
+	db.Where("user_id = ? AND module_type = ? AND status = ?", userId, moduleType, constant.TaskSuccess)
+	db.Order("created_time DESC")
+	db.Limit(history)
 	var res []*Task
-	err := DB.Model(Task{}).Where("module_type = ? AND status = ?", moduleType, constant.TaskSuccess).Order("created_time DESC").Limit(history).Find(&res).Error
-	if err != nil {
+	if err := db.Find(&res).Error; err != nil {
 		return nil, err
 	}
 	return res, nil

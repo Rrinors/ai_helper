@@ -6,25 +6,14 @@ import (
 )
 
 const qwenInput = `{
-    "model": "qwen-turbo",
-    "input": {
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are a helpful assistant."
-            },
-            {
-                "role": "user",
-                "content": "你和GPT4、文心一言、kimi助手比谁更厉害？"
-            }
-        ]
-    }
+    "role": "user",
+    "content": "你和GPT4、文心一言、kimi助手比谁更厉害？"
 }`
 
 func TestDownload(t *testing.T) {
 	Init()
 	bucket := "qwen"
-	object := "test_output.json"
+	object := "test_input.json"
 	data, err := DownloadFile(bucket, object)
 	if err != nil {
 		t.Fatal(err)

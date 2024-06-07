@@ -27,15 +27,19 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		}
 	}
 
-	taskDO, err := db.CreateTask(req.UserId, constant.Qwen, "", "", int(req.HistoryNum))
+	model := req.InputModel
+	if model == "" {
+		model = "qwen-turbo"
+	}
+	taskDO, err := db.CreateTask(req.UserId, constant.Qwen, model, int(req.HistoryNum), "", "")
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
 			StatusMsg:  fmt.Sprintf("create qwen task failed: err=%v", err),
 		}
 	}
-	taskDO.InputUrl = fmt.Sprintf("task#%v_input.txt", taskDO.Id)
-	taskDO.OutputUrl = fmt.Sprintf("task#%v_output.txt", taskDO.Id)
+	taskDO.InputUrl = fmt.Sprintf("task#%v_input.json", taskDO.Id)
+	taskDO.OutputUrl = fmt.Sprintf("task#%v_output.json", taskDO.Id)
 	err = db.UpdateTask(taskDO)
 	if err != nil {
 		return &qwen.QwenApiResponse{
@@ -49,7 +53,6 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		role = "user"
 	}
 	inputMap := map[string]string{
-		"model":   req.InputModel,
 		"role":    role,
 		"content": req.InputContent,
 	}

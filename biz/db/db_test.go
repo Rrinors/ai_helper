@@ -11,11 +11,9 @@ import (
 
 func TestCreateTask(t *testing.T) {
 	Init()
-	userId := uint64(1)
-	moduleType := constant.Qwen
-	inputUrl := "test_input.json"
-	outputUrl := "test_output.json"
-	task, err := CreateTask(userId, moduleType, inputUrl, outputUrl, 10)
+	inputUrl := "task#3_input.json"
+	outputUrl := "task#3_output.json"
+	task, err := CreateTask(1, constant.Qwen, "qwen-turbo", 10, inputUrl, outputUrl)
 	if err != nil {
 		t.Fatal(err)
 	}
