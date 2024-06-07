@@ -44,7 +44,7 @@ func QueryQwenTask(ctx context.Context, c *app.RequestContext) {
 	}
 
 	log.Info("/api/v1/qwen/result request: %v", util.JsonFmt(&req))
-	resp := service.SubmitQwenTask(&req)
+	resp := service.QueryQwenTask(&req)
 
 	log.Info("/api/v1/qwen/result response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)

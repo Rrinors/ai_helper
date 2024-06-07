@@ -71,8 +71,8 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	}
 }
 
-// TODO
 func QueryQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
+	// TODO
 	return &qwen.QwenApiResponse{
 		StatusCode: 0,
 		StatusMsg:  "query qwen task success",
