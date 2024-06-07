@@ -37,7 +37,10 @@ func dispatchTask(moduleType int) {
 		time.Sleep(config.DBFetchInterval)
 		tasks, err := db.LimitedFetchPendingTasks(moduleType, 2*concurrency)
 		if err != nil {
-			log.Error("fetch %v tasks failed: err=%v", moduleType, err)
+			log.Error("fetch %v tasks failed, err=%v", moduleType, err)
+			continue
+		}
+		if len(tasks) == 0 {
 			continue
 		}
 		log.Info("fetch %v pending tasks", len(tasks))

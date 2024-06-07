@@ -26,7 +26,7 @@ service QwenApiHandler {
         option (api.post) = "api/v1/qwen/submit";
     }
 
-    rpc QueryQwenTask(QwenApiRequest) returns(QwenApiResponse) {
+    rpc QueryQwenTaskResult(QwenApiRequest) returns(QwenApiResponse) {
         option (api.get) = "api/v1/qwen/result";
     }
 }

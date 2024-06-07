@@ -90,7 +90,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 			messageList = append(messageList, respMessage)
 			continue
 		}
-		respMessage = getRespMessage(confMap)
+		respMessage = GetRespMessage(confMap)
 		messageList = append(messageList, respMessage)
 	}
 	// add cur request
@@ -151,13 +151,13 @@ func (m *QwenModule) HandleTaskResult() {
 		result.task.FinishedTime = time.Now()
 		if result.err != nil {
 			result.task.Status = constant.TaskFailed
-			log.Error("task %v failed: err=%v", result.task.Id, result.err)
+			log.Error("task %v failed, err=%v", result.task.Id, result.err)
 		} else {
 			result.task.Status = constant.TaskSuccess
 			log.Info("task %v success", result.task.Id)
 		}
 		if err := db.UpdateTask(result.task); err != nil {
-			log.Error("update task %v status failed: err=%v", result.task.Id, err)
+			log.Error("update task %v status failed, err=%v", result.task.Id, err)
 		}
 	}
 }
@@ -171,7 +171,7 @@ func NewQwenModule() *QwenModule {
 	}
 }
 
-func getRespMessage(confMap map[string]any) messageCarrier {
+func GetRespMessage(confMap map[string]any) messageCarrier {
 	output, ok := confMap["output"].(map[string]any)
 	if !ok {
 		return messageCarrier{

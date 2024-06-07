@@ -25,12 +25,12 @@ func RegisterUser(req *user.UserApiRequest) *user.UserApiResponse {
 	if err != nil {
 		return &user.UserApiResponse{
 			StatusCode: 500,
-			StatusMsg:  fmt.Sprintf("create user failed: err=%v", err),
+			StatusMsg:  fmt.Sprintf("create user failed, err=%v", err),
 		}
 	}
 	return &user.UserApiResponse{
 		StatusCode: 0,
-		StatusMsg:  fmt.Sprintf("register user success: %v", util.JsonFmt(userDO)),
+		StatusMsg:  util.JsonFmt(userDO),
 	}
 }
 
@@ -53,7 +53,7 @@ func BindQwenApiKey(req *user.UserApiRequest) *user.UserApiResponse {
 	if err != nil {
 		return &user.UserApiResponse{
 			StatusCode: 500,
-			StatusMsg:  fmt.Sprintf("get user failed: err=%v", err),
+			StatusMsg:  fmt.Sprintf("get user failed, err=%v", err),
 		}
 	}
 
@@ -62,7 +62,7 @@ func BindQwenApiKey(req *user.UserApiRequest) *user.UserApiResponse {
 	if err != nil {
 		return &user.UserApiResponse{
 			StatusCode: 500,
-			StatusMsg:  fmt.Sprintf("update user failed: err=%v", err),
+			StatusMsg:  fmt.Sprintf("update user failed, err=%v", err),
 		}
 	}
 	return &user.UserApiResponse{

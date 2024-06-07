@@ -4,6 +4,7 @@ import (
 	"ai_helper/biz/db"
 	"ai_helper/biz/minio"
 	"ai_helper/biz/model/module/qwen"
+	qwen_module "ai_helper/biz/module/qwen"
 	"ai_helper/package/config"
 	"ai_helper/package/constant"
 	"ai_helper/package/util"
@@ -35,7 +36,7 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
-			StatusMsg:  fmt.Sprintf("create qwen task failed: err=%v", err),
+			StatusMsg:  fmt.Sprintf("create qwen task failed, err=%v", err),
 		}
 	}
 	taskDO.InputUrl = fmt.Sprintf("task#%v_input.json", taskDO.Id)
@@ -44,7 +45,7 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
-			StatusMsg:  fmt.Sprintf("update qwen task failed: err=%v", err),
+			StatusMsg:  fmt.Sprintf("update qwen task failed, err=%v", err),
 		}
 	}
 
@@ -61,20 +62,57 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
-			StatusMsg:  fmt.Sprintf("upload qwen input failed: err=%v", err),
+			StatusMsg:  fmt.Sprintf("upload qwen input failed, err=%v", err),
 		}
 	}
 
 	return &qwen.QwenApiResponse{
 		StatusCode: 0,
-		StatusMsg:  fmt.Sprintf("submit qwen task success: %v", util.JsonFmt(taskDO)),
+		StatusMsg:  util.JsonFmt(taskDO),
 	}
 }
 
-func QueryQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
-	// TODO
+func QueryQwenTaskResult(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
+	if req.Id == uint64(0) {
+		return &qwen.QwenApiResponse{
+			StatusCode: 400,
+			StatusMsg:  "empty task_id is invalid",
+		}
+	}
+
+	task, err := db.FetchTaskById(req.Id)
+	if err != nil {
+		return &qwen.QwenApiResponse{
+			StatusCode: 500,
+			StatusMsg:  fmt.Sprintf("get task failed, err=%v", err),
+		}
+	}
+	if task.Status != constant.TaskSuccess {
+		return &qwen.QwenApiResponse{
+			StatusCode: 202,
+			StatusMsg:  fmt.Sprintf("task not success, status=%v", task.Status),
+		}
+	}
+
+	data, err := minio.DownloadFile(config.MinioBucketMap[constant.Qwen], task.OutputUrl)
+	if err != nil {
+		return &qwen.QwenApiResponse{
+			StatusCode: 500,
+			StatusMsg:  fmt.Sprintf("download resp failed, err=%v", err),
+		}
+	}
+
+	confMap := map[string]any{}
+	err = sonic.Unmarshal(data, &confMap)
+	if err != nil {
+		return &qwen.QwenApiResponse{
+			StatusCode: 500,
+			StatusMsg:  fmt.Sprintf("parse resp failed, err=%v", err),
+		}
+	}
+	message := qwen_module.GetRespMessage(confMap)
 	return &qwen.QwenApiResponse{
 		StatusCode: 0,
-		StatusMsg:  "query qwen task success",
+		StatusMsg:  message.Content,
 	}
 }

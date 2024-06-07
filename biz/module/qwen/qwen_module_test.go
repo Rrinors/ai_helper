@@ -23,7 +23,7 @@ func TestGetRespMessage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp := getRespMessage(confMap)
+	resp := GetRespMessage(confMap)
 	fmt.Println(resp.Content)
 }
 
@@ -79,7 +79,7 @@ func TestMakeRequestBody(t *testing.T) {
 			messageList = append(messageList, respMessage)
 			continue
 		}
-		respMessage = getRespMessage(confMap)
+		respMessage = GetRespMessage(confMap)
 		messageList = append(messageList, respMessage)
 	}
 

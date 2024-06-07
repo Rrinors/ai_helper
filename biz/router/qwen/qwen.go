@@ -23,7 +23,7 @@ func Register(r *server.Hertz) {
 			_v1 := _api.Group("/v1", _v1Mw()...)
 			{
 				_qwen := _v1.Group("/qwen", _qwenMw()...)
-				_qwen.GET("/result", append(_queryqwentaskMw(), qwen.QueryQwenTask)...)
+				_qwen.GET("/result", append(_queryqwentaskresultMw(), qwen.QueryQwenTaskResult)...)
 				_qwen.POST("/submit", append(_submitqwentaskMw(), qwen.SubmitQwenTask)...)
 			}
 		}
