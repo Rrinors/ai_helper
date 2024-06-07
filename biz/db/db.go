@@ -16,9 +16,11 @@ type Task struct {
 	UserId       uint64    `gorm:"index;notNull" json:"user_id"`
 	ModuleType   int       `gorm:"index;notNull" json:"module_type"`
 	Status       int       `gorm:"index;notNull" json:"status"`
+	ModelName    string    `gorm:"index" json:"model_name"`
+	HistoryNum   int       `json:"history_num"`
 	InputUrl     string    `json:"input_url"`
 	OutputUrl    string    `json:"output_url"`
-	CreatedTime  time.Time `json:"created_time"`
+	CreatedTime  time.Time `gorm:"index" json:"created_time"`
 	FinishedTime time.Time `json:"finished_time"`
 }
 
@@ -56,20 +58,22 @@ func UpdateTask(task *Task) error {
 	return nil
 }
 
-func GetUserById(userId uint64) (*User, error) {
+func FetchUserById(userId uint64) (*User, error) {
 	var res *User
-	err := DB.Model(User{}).Where("id = ?", userId).First(&res).Error
+	err := DB.Model(User{}).First(&res, "id = ?", userId).Error
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 
-func CreateTask(userId uint64, moduleType int, inputUrl, outputUrl string) (*Task, error) {
+func CreateTask(userId uint64, moduleType int, model string, history int, inputUrl, outputUrl string) (*Task, error) {
 	task := &Task{
 		UserId:       userId,
 		ModuleType:   moduleType,
 		Status:       constant.TaskPending,
+		ModelName:    model,
+		HistoryNum:   history,
 		InputUrl:     inputUrl,
 		OutputUrl:    outputUrl,
 		CreatedTime:  time.Now(),
@@ -90,4 +94,23 @@ func CreateUser(name string, apiKeyMap map[int]string) (*User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func UpdateUser(user *User) error {
+	if err := DB.Model(User{}).Where("id = ?", user.Id).Updates(user).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func FetchUserHistoryTasks(userId uint64, moduleType int, history int) ([]*Task, error) {
+	db := DB.Model(Task{})
+	db.Where("user_id = ? AND module_type = ? AND status = ?", userId, moduleType, constant.TaskSuccess)
+	db.Order("created_time DESC")
+	db.Limit(history)
+	var res []*Task
+	if err := db.Find(&res).Error; err != nil {
+		return nil, err
+	}
+	return res, nil
 }

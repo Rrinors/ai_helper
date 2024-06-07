@@ -2,6 +2,7 @@ package db
 
 import (
 	"ai_helper/package/constant"
+	"ai_helper/package/util"
 	"fmt"
 	"testing"
 
@@ -10,11 +11,9 @@ import (
 
 func TestCreateTask(t *testing.T) {
 	Init()
-	userId := uint64(1)
-	moduleType := constant.Qwen
-	inputUrl := "test_input.json"
-	outputUrl := "test_output.json"
-	task, err := CreateTask(userId, moduleType, inputUrl, outputUrl)
+	inputUrl := "task#3_input.json"
+	outputUrl := "task#3_output.json"
+	task, err := CreateTask(1, constant.Qwen, "qwen-turbo", 10, inputUrl, outputUrl)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,4 +43,13 @@ func TestUpdateTask(t *testing.T) {
 	if err := UpdateTask(&task); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestGetUserById(t *testing.T) {
+	Init()
+	user, err := FetchUserById(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(util.JsonFmt(user))
 }

@@ -1,3 +1,7 @@
+update:
+	chmod +x hz_gen.sh \
+	&& ./hz_gen.sh
 run:
-	go build -o ./output/ai_helper \
-	&& ./output/ai_helper
+	chmod +x build.sh \
+	&& ./build.sh \
+	&& ./output/bootstrap.sh

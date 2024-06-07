@@ -8,16 +8,23 @@ import (
 	"ai_helper/package/log"
 	"ai_helper/package/util"
 	"time"
+
+	"github.com/bytedance/sonic"
 )
 
 type QwenModule struct {
 	ThreadPool *util.ThreadPool
-	ResultCh   chan qwenResult
+	ResultCh   chan taskResult
 }
 
-type qwenResult struct {
+type taskResult struct {
 	task *db.Task
 	err  error
+}
+
+type messageCarrier struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
 }
 
 func (m *QwenModule) HandleTaskReq(task *db.Task) {
@@ -30,20 +37,98 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 	log.Info("start process task %v", task.Id)
 	var err error
 	defer func() {
-		result := qwenResult{
+		result := taskResult{
 			task: task,
 			err:  err,
 		}
 		m.ResultCh <- result
 	}()
 
-	bucket := config.MinioBucketMap[constant.Qwen]
-	body, err := minio.DownloadFile(bucket, task.InputUrl)
+	historyTasks, err := db.FetchUserHistoryTasks(task.UserId, constant.Qwen, task.HistoryNum)
 	if err != nil {
 		return
 	}
+	log.Info("fetch %v history from task %v", len(historyTasks), task.Id)
 
-	user, err := db.GetUserById(task.UserId)
+	bucket := config.MinioBucketMap[constant.Qwen]
+	messageList := []messageCarrier{}
+	for i := len(historyTasks) - 1; i >= 0; i-- {
+		// add history request
+		historyTask := historyTasks[i]
+		conf, err := minio.DownloadFile(bucket, historyTask.InputUrl)
+		if err != nil {
+			continue
+		}
+		confMap := map[string]any{}
+		err = sonic.Unmarshal(conf, &confMap)
+		if err != nil {
+			continue
+		}
+		role, ok := confMap["role"].(string)
+		if !ok {
+			continue
+		}
+		content, ok := confMap["content"].(string)
+		if !ok {
+			continue
+		}
+		messageList = append(messageList, messageCarrier{
+			Role:    role,
+			Content: content,
+		})
+		// add history response
+		respMessage := messageCarrier{
+			Role: "assistant",
+		}
+		conf, err = minio.DownloadFile(bucket, historyTask.OutputUrl)
+		if err != nil {
+			messageList = append(messageList, respMessage)
+			continue
+		}
+		err = sonic.Unmarshal(conf, &confMap)
+		if err != nil {
+			messageList = append(messageList, respMessage)
+			continue
+		}
+		respMessage = getRespMessage(confMap)
+		messageList = append(messageList, respMessage)
+	}
+	// add cur request
+	conf, err := minio.DownloadFile(bucket, task.InputUrl)
+	if err != nil {
+		return
+	}
+	confMap := map[string]any{}
+	err = sonic.Unmarshal(conf, &confMap)
+	if err != nil {
+		return
+	}
+	role, ok := confMap["role"].(string)
+	if !ok {
+		return
+	}
+	content, ok := confMap["content"].(string)
+	if !ok {
+		return
+	}
+	messageList = append(messageList, messageCarrier{
+		Role:    role,
+		Content: content,
+	})
+
+	model := task.ModelName
+	if model == "" {
+		model = "qwen-turbo"
+	}
+	bodyMap := map[string]any{
+		"model": model,
+		"input": map[string]any{
+			"messages": messageList,
+		},
+	}
+	body, _ := sonic.Marshal(bodyMap)
+
+	user, err := db.FetchUserById(task.UserId)
 	if err != nil {
 		return
 	}
@@ -82,6 +167,25 @@ func NewQwenModule() *QwenModule {
 	concurrency := config.ModuleConcurrencyMap[moduleType]
 	return &QwenModule{
 		ThreadPool: util.NewThreadPool(concurrency),
-		ResultCh:   make(chan qwenResult, concurrency),
+		ResultCh:   make(chan taskResult, concurrency),
+	}
+}
+
+func getRespMessage(confMap map[string]any) messageCarrier {
+	output, ok := confMap["output"].(map[string]any)
+	if !ok {
+		return messageCarrier{
+			Role: "assistant",
+		}
+	}
+	content, ok := output["text"].(string)
+	if !ok {
+		return messageCarrier{
+			Role: "assistant",
+		}
+	}
+	return messageCarrier{
+		Role:    "assistant",
+		Content: content,
 	}
 }
