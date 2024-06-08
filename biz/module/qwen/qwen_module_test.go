@@ -39,7 +39,7 @@ func TestMakeRequestBody(t *testing.T) {
 	fmt.Printf("count=%v\n", len(historyTasks))
 
 	bucket := config.MinioBucketMap[constant.Qwen]
-	messageList := []messageCarrier{}
+	messageList := []MessageCarrier{}
 	for i := len(historyTasks) - 1; i >= 0; i-- {
 		historyTask := historyTasks[i]
 		fmt.Printf("task_id=%v\n", historyTask.Id)
@@ -61,12 +61,12 @@ func TestMakeRequestBody(t *testing.T) {
 		if !ok {
 			continue
 		}
-		messageList = append(messageList, messageCarrier{
+		messageList = append(messageList, MessageCarrier{
 			Role:    role,
 			Content: content,
 		})
 		// add history response
-		respMessage := messageCarrier{
+		respMessage := MessageCarrier{
 			Role: "assistant",
 		}
 		conf, err = minio.DownloadFile(bucket, historyTask.OutputUrl)
@@ -101,7 +101,7 @@ func TestMakeRequestBody(t *testing.T) {
 	if !ok {
 		t.Fatal(err)
 	}
-	messageList = append(messageList, messageCarrier{
+	messageList = append(messageList, MessageCarrier{
 		Role:    role,
 		Content: content,
 	})
