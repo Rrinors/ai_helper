@@ -16,7 +16,7 @@ type Task struct {
 	UserId       uint64    `gorm:"index;notNull" json:"user_id"`
 	ModuleType   int       `gorm:"index;notNull" json:"module_type"`
 	Status       int       `gorm:"index;notNull" json:"status"`
-	ModelName    string    `gorm:"index" json:"model_name"`
+	ModelName    string    `json:"model_name"`
 	HistoryNum   int       `json:"history_num"`
 	InputUrl     string    `json:"input_url"`
 	OutputUrl    string    `json:"output_url"`
