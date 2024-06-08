@@ -127,6 +127,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 		},
 	}
 	body, _ := sonic.Marshal(bodyMap)
+	log.Info("qwen request body: %v", string(body))
 
 	user, err := db.FetchUserById(task.UserId)
 	if err != nil {

@@ -9,9 +9,10 @@ RESULT_URI = "/api/v1/qwen/result"
 def call(args):
     print(f"start interact with {args.model}")
     while True:
-        req = input("You: ")
+        req = input("you: ")
         if req == "quit":
             break
+        # submit task
         data_map = {
             'user_id': args.user,
             'input_model': args.model,
@@ -19,42 +20,39 @@ def call(args):
             'input_content': req,
             'history_num': args.history
         }
-        print(f"req: {json.dumps(data_map)}")
-        resp = http_request("POST", SUBMIT_URI, json.dumps(data_map))
+        resp = http_request("POST", SUBMIT_URI, data_map)
         if resp.status_code != 200:
-            print(f"http request failed, code={resp.status_code}")
+            print(f"submit http_request failed, code={resp.status_code}")
             continue
-        try:
-            task = resp.json()
-        except Exception:
-            print(f"response format error")
-            continue
-        task_id = task['id']
-        data_map = {
-            'id': task_id
-        }
+        resp_map = resp.json()
+        task = json.loads(resp_map['status_msg'])
+        id = task['id']
         # wait finish
+        data_map = {
+            'id': id
+        }
         success = False
         start = time.time()
         while True:
-            time.sleep(0.5)
-            resp = http_request("GET", RESULT_URI, json.dumps(data_map))
+            time.sleep(1)
+            resp = http_request("GET", RESULT_URI, data_map)
             if resp.status_code != 200:
+                print(f"result http_request failed, code={resp.status_code}")
                 break
-            try:
-                resp_data = resp.json()
-            except Exception:
-                break
-            if resp_data['status_code'] == 0:
+            resp_map = resp.json()
+            if resp_map['status_code'] == 0:
                 success = True
                 break
-            if resp_data['status_code'] != 202 or time.time() - start > 30:
+            if resp_map['status_code'] != 202:
+                print(f"result failed, err_msg={resp_map['status_msg']}")
+                break
+            if time.time() - start > 30:
+                print(f"result timeout")
                 break
         if not success:
-            print(f"get qwen response failed")
             continue
-        message = resp['status_msg']
-        print(f"Qwen: {message}")
+        message = resp_map['status_msg']
+        print(f"{args.model}: {message}")
 
 
 if __name__ == "__main__":

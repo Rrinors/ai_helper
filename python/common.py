@@ -2,12 +2,13 @@ import requests
 
 SERVER = "http://127.0.0.1:8888"
 
-def http_request(method: str, uri: str, data: str):
+def http_request(method: str, uri: str, data: dict):
     headers = {
         'Content-Type': "application/json"
     }
-    print(f"request: {SERVER+uri}")
+    url = SERVER + uri
     if method == "POST":
-        return requests.post(SERVER+uri, json=data, headers=headers)
+        response = requests.post(url, json=data, headers=headers)
     elif method == "GET":
-        return requests.get(SERVER+uri, json=data, headers=headers)
+        response = requests.get(url, json=data, headers=headers)
+    return response
