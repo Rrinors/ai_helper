@@ -20,7 +20,7 @@ type Task struct {
 	HistoryNum   int       `json:"history_num"`
 	InputUrl     string    `json:"input_url"`
 	OutputUrl    string    `json:"output_url"`
-	CreatedTime  time.Time `gorm:"index" json:"created_time"`
+	CreatedTime  time.Time `json:"created_time"`
 	FinishedTime time.Time `json:"finished_time"`
 }
 
@@ -106,7 +106,7 @@ func UpdateUser(user *User) error {
 func FetchUserHistoryTasks(userId uint64, moduleType int, history int) ([]*Task, error) {
 	db := DB.Model(Task{})
 	db.Where("user_id = ? AND module_type = ? AND status = ?", userId, moduleType, constant.TaskSuccess)
-	db.Order("created_time DESC")
+	db.Order("id DESC")
 	db.Limit(history)
 	var res []*Task
 	if err := db.Find(&res).Error; err != nil {
