@@ -24,7 +24,7 @@ func RequestHttp(method, url string, headers map[string]string, body []byte) ([]
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("http request failed: code=%v", resp.StatusCode)
+		return nil, fmt.Errorf("http request failed, code=%v", resp.StatusCode)
 	}
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {

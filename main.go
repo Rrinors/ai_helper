@@ -19,7 +19,7 @@ func Init() {
 func main() {
 	Init()
 
-	h := server.Default(server.WithHostPorts("127.0.0.1:5000"))
+	h := server.Default()
 
 	register(h)
 	h.Spin()

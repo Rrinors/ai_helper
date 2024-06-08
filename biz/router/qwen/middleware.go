@@ -35,3 +35,8 @@ func _submitqwentaskMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _queryqwentaskresultMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

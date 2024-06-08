@@ -37,7 +37,7 @@ func Init() {
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("mysql init failed: err=%v", err)
+		log.Fatal("mysql init failed, err=%v", err)
 	}
 	log.Info("mysql init success")
 }
@@ -110,6 +110,15 @@ func FetchUserHistoryTasks(userId uint64, moduleType int, history int) ([]*Task,
 	db.Limit(history)
 	var res []*Task
 	if err := db.Find(&res).Error; err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func FetchTaskById(taskId uint64) (*Task, error) {
+	var res *Task
+	err := DB.Model(Task{}).First(&res, "id = ?", taskId).Error
+	if err != nil {
 		return nil, err
 	}
 	return res, nil

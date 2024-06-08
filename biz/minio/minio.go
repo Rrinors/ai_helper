@@ -20,7 +20,7 @@ func Init() {
 		Secure: config.MinioUseSSL,
 	})
 	if err != nil {
-		log.Fatal("minio init failed: err=%v", err)
+		log.Fatal("minio init failed, err=%v", err)
 	}
 	log.Info("minio init success")
 }

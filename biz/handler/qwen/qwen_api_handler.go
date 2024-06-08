@@ -32,9 +32,9 @@ func SubmitQwenTask(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
-// QueryQwenTask .
+// QueryQwenTaskResult .
 // @router api/v1/qwen/result [GET]
-func QueryQwenTask(ctx context.Context, c *app.RequestContext) {
+func QueryQwenTaskResult(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req qwen.QwenApiRequest
 	err = c.BindAndValidate(&req)
@@ -44,7 +44,7 @@ func QueryQwenTask(ctx context.Context, c *app.RequestContext) {
 	}
 
 	log.Info("/api/v1/qwen/result request: %v", util.JsonFmt(&req))
-	resp := service.QueryQwenTask(&req)
+	resp := service.QueryQwenTaskResult(&req)
 
 	log.Info("/api/v1/qwen/result response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)

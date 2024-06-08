@@ -22,7 +22,7 @@ type taskResult struct {
 	err  error
 }
 
-type messageCarrier struct {
+type MessageCarrier struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
@@ -51,7 +51,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 	log.Info("fetch %v history from task %v", len(historyTasks), task.Id)
 
 	bucket := config.MinioBucketMap[constant.Qwen]
-	messageList := []messageCarrier{}
+	messageList := []MessageCarrier{}
 	for i := len(historyTasks) - 1; i >= 0; i-- {
 		// add history request
 		historyTask := historyTasks[i]
@@ -72,12 +72,12 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 		if !ok {
 			continue
 		}
-		messageList = append(messageList, messageCarrier{
+		messageList = append(messageList, MessageCarrier{
 			Role:    role,
 			Content: content,
 		})
 		// add history response
-		respMessage := messageCarrier{
+		respMessage := MessageCarrier{
 			Role: "assistant",
 		}
 		conf, err = minio.DownloadFile(bucket, historyTask.OutputUrl)
@@ -90,7 +90,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 			messageList = append(messageList, respMessage)
 			continue
 		}
-		respMessage = getRespMessage(confMap)
+		respMessage = GetRespMessage(confMap)
 		messageList = append(messageList, respMessage)
 	}
 	// add cur request
@@ -111,7 +111,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 	if !ok {
 		return
 	}
-	messageList = append(messageList, messageCarrier{
+	messageList = append(messageList, MessageCarrier{
 		Role:    role,
 		Content: content,
 	})
@@ -127,6 +127,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 		},
 	}
 	body, _ := sonic.Marshal(bodyMap)
+	log.Info("qwen request body: %v", string(body))
 
 	user, err := db.FetchUserById(task.UserId)
 	if err != nil {
@@ -151,13 +152,13 @@ func (m *QwenModule) HandleTaskResult() {
 		result.task.FinishedTime = time.Now()
 		if result.err != nil {
 			result.task.Status = constant.TaskFailed
-			log.Error("task %v failed: err=%v", result.task.Id, result.err)
+			log.Error("task %v failed, err=%v", result.task.Id, result.err)
 		} else {
 			result.task.Status = constant.TaskSuccess
 			log.Info("task %v success", result.task.Id)
 		}
 		if err := db.UpdateTask(result.task); err != nil {
-			log.Error("update task %v status failed: err=%v", result.task.Id, err)
+			log.Error("update task %v status failed, err=%v", result.task.Id, err)
 		}
 	}
 }
@@ -171,20 +172,20 @@ func NewQwenModule() *QwenModule {
 	}
 }
 
-func getRespMessage(confMap map[string]any) messageCarrier {
+func GetRespMessage(confMap map[string]any) MessageCarrier {
 	output, ok := confMap["output"].(map[string]any)
 	if !ok {
-		return messageCarrier{
+		return MessageCarrier{
 			Role: "assistant",
 		}
 	}
 	content, ok := output["text"].(string)
 	if !ok {
-		return messageCarrier{
+		return MessageCarrier{
 			Role: "assistant",
 		}
 	}
-	return messageCarrier{
+	return MessageCarrier{
 		Role:    "assistant",
 		Content: content,
 	}
