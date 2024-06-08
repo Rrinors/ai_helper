@@ -39,6 +39,8 @@ func Init() {
 	if err != nil {
 		log.Fatal("mysql init failed, err=%v", err)
 	}
+	// update tables
+	DB.AutoMigrate(User{}, Task{})
 	log.Info("mysql init success")
 }
 

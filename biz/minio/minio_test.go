@@ -31,3 +31,11 @@ func TestUpload(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestCreateBucket(t *testing.T) {
+	Init()
+	err := initBucket("test-create")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
