@@ -33,7 +33,7 @@ type User struct {
 var DB *gorm.DB
 
 func Init() {
-	dsn := fmt.Sprintf(config.MysqlDSN, config.MysqlUser, config.MysqlPassword, config.MysqlServer, config.MysqlDBName)
+	dsn := fmt.Sprintf(config.MysqlDSN, config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDBName)
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

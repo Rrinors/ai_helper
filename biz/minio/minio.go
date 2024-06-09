@@ -5,6 +5,7 @@ import (
 	"ai_helper/package/log"
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/minio/minio-go/v7"
@@ -15,7 +16,7 @@ var minioClient *minio.Client
 
 func Init() {
 	var err error
-	minioClient, err = minio.New(config.MinioServer, &minio.Options{
+	minioClient, err = minio.New(fmt.Sprintf("%s:%d", config.MinioHost, config.MinioPort), &minio.Options{
 		Creds:  credentials.NewStaticV4(config.MinioUser, config.MinioPassword, ""),
 		Secure: config.MinioUseSSL,
 	})
