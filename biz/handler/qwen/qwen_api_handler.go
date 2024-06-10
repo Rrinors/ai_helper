@@ -26,7 +26,7 @@ func SubmitQwenTask(ctx context.Context, c *app.RequestContext) {
 	}
 
 	log.Info("/api/v1/qwen/submit request: %v", util.JsonFmt(&req))
-	resp := service.SubmitQwenTask(&req)
+	resp := service.SubmitQwenTask(ctx, &req)
 
 	log.Info("/api/v1/qwen/submit response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)
@@ -44,7 +44,7 @@ func QueryQwenTaskResult(ctx context.Context, c *app.RequestContext) {
 	}
 
 	log.Info("/api/v1/qwen/result request: %v", util.JsonFmt(&req))
-	resp := service.QueryQwenTaskResult(&req)
+	resp := service.QueryQwenTaskResult(ctx, &req)
 
 	log.Info("/api/v1/qwen/result response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)

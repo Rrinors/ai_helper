@@ -20,6 +20,7 @@ type Task struct {
 	HistoryNum   int       `json:"history_num"`
 	InputUrl     string    `json:"input_url"`
 	OutputUrl    string    `json:"output_url"`
+	Timeout      int       `json:"timeout"`
 	CreatedTime  time.Time `json:"created_time"`
 	FinishedTime time.Time `json:"finished_time"`
 }
@@ -69,7 +70,7 @@ func FetchUserById(userId uint64) (*User, error) {
 	return res, nil
 }
 
-func CreateTask(userId uint64, moduleType int, model string, history int, inputUrl, outputUrl string) (*Task, error) {
+func CreateTask(userId uint64, moduleType int, model string, history int, inputUrl, outputUrl string, timeout int) (*Task, error) {
 	task := &Task{
 		UserId:       userId,
 		ModuleType:   moduleType,
@@ -78,6 +79,7 @@ func CreateTask(userId uint64, moduleType int, model string, history int, inputU
 		HistoryNum:   history,
 		InputUrl:     inputUrl,
 		OutputUrl:    outputUrl,
+		Timeout:      timeout,
 		CreatedTime:  time.Now(),
 		FinishedTime: time.Unix(0, 0),
 	}

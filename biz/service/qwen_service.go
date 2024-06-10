@@ -8,12 +8,13 @@ import (
 	"ai_helper/package/config"
 	"ai_helper/package/constant"
 	"ai_helper/package/util"
+	"context"
 	"fmt"
 
 	"github.com/bytedance/sonic"
 )
 
-func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
+func SubmitQwenTask(ctx context.Context, req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	if req.UserId == uint64(0) {
 		return &qwen.QwenApiResponse{
 			StatusCode: 400,
@@ -28,11 +29,18 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		}
 	}
 
+	if req.HistoryNum < 0 || req.Timeout < 0 {
+		return &qwen.QwenApiResponse{
+			StatusCode: 400,
+			StatusMsg:  "invalid task params value",
+		}
+	}
+
 	model := req.InputModel
 	if model == "" {
-		model = "qwen-turbo"
+		model = "qwen-long"
 	}
-	taskDO, err := db.CreateTask(req.UserId, constant.Qwen, model, int(req.HistoryNum), "", "")
+	taskDO, err := db.CreateTask(req.UserId, constant.Qwen, model, int(req.HistoryNum), "", "", int(req.Timeout))
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
@@ -58,7 +66,7 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		"content": req.InputContent,
 	}
 	inputConfig, _ := sonic.Marshal(inputMap)
-	err = minio.UploadFile(config.MinioBucketMap[constant.Qwen], taskDO.InputUrl, inputConfig)
+	err = minio.UploadFile(ctx, config.MinioBucketMap[constant.Qwen], taskDO.InputUrl, inputConfig)
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
@@ -72,7 +80,7 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	}
 }
 
-func QueryQwenTaskResult(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
+func QueryQwenTaskResult(ctx context.Context, req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	if req.Id == uint64(0) {
 		return &qwen.QwenApiResponse{
 			StatusCode: 400,
@@ -88,13 +96,19 @@ func QueryQwenTaskResult(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		}
 	}
 	if task.Status != constant.TaskSuccess {
+		if task.Status == constant.TaskFailed {
+			return &qwen.QwenApiResponse{
+				StatusCode: 500,
+				StatusMsg:  "task failed",
+			}
+		}
 		return &qwen.QwenApiResponse{
 			StatusCode: 202,
-			StatusMsg:  fmt.Sprintf("task not success, status=%v", task.Status),
+			StatusMsg:  fmt.Sprintf("task not finished, status=%v", task.Status),
 		}
 	}
 
-	data, err := minio.DownloadFile(config.MinioBucketMap[constant.Qwen], task.OutputUrl)
+	data, err := minio.DownloadFile(ctx, config.MinioBucketMap[constant.Qwen], task.OutputUrl)
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,

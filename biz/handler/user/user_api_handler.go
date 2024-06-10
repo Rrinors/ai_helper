@@ -26,7 +26,7 @@ func RegisterUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	log.Info("/api/v1/user/register request: %v", util.JsonFmt(&req))
-	resp := service.RegisterUser(&req)
+	resp := service.RegisterUser(ctx, &req)
 
 	log.Info("/api/v1/user/register response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)
@@ -44,7 +44,7 @@ func BindQwenApiKey(ctx context.Context, c *app.RequestContext) {
 	}
 
 	log.Info("/api/v1/user/bind_qwen request: %v", util.JsonFmt(&req))
-	resp := service.BindQwenApiKey(&req)
+	resp := service.BindQwenApiKey(ctx, &req)
 
 	log.Info("/api/v1/user/bind_qwen response: %v", util.JsonFmt(resp))
 	c.JSON(consts.StatusOK, resp)

@@ -7,6 +7,8 @@ import (
 	"ai_helper/package/constant"
 	"ai_helper/package/log"
 	"ai_helper/package/util"
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -50,12 +52,14 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 	}
 	log.Info("fetch %v history from task %v", len(historyTasks), task.Id)
 
+	ctx := context.Background()
+
 	bucket := config.MinioBucketMap[constant.Qwen]
 	messageList := []MessageCarrier{}
 	for i := len(historyTasks) - 1; i >= 0; i-- {
 		// add history request
 		historyTask := historyTasks[i]
-		conf, err := minio.DownloadFile(bucket, historyTask.InputUrl)
+		conf, err := minio.DownloadFile(ctx, bucket, historyTask.InputUrl)
 		if err != nil {
 			continue
 		}
@@ -65,36 +69,33 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 			continue
 		}
 		role, ok := confMap["role"].(string)
-		if !ok {
+		if !ok || role == "" {
 			continue
 		}
 		content, ok := confMap["content"].(string)
-		if !ok {
+		if !ok || content == "" {
 			continue
 		}
-		messageList = append(messageList, MessageCarrier{
+		reqMessage := MessageCarrier{
 			Role:    role,
 			Content: content,
-		})
-		// add history response
-		respMessage := MessageCarrier{
-			Role: "assistant",
 		}
-		conf, err = minio.DownloadFile(bucket, historyTask.OutputUrl)
+		// add history response
+		conf, err = minio.DownloadFile(ctx, bucket, historyTask.OutputUrl)
 		if err != nil {
-			messageList = append(messageList, respMessage)
 			continue
 		}
 		err = sonic.Unmarshal(conf, &confMap)
 		if err != nil {
-			messageList = append(messageList, respMessage)
 			continue
 		}
-		respMessage = GetRespMessage(confMap)
-		messageList = append(messageList, respMessage)
+		respMessage := GetRespMessage(confMap)
+		if respMessage != nil {
+			messageList = append(messageList, reqMessage, *respMessage)
+		}
 	}
 	// add cur request
-	conf, err := minio.DownloadFile(bucket, task.InputUrl)
+	conf, err := minio.DownloadFile(ctx, bucket, task.InputUrl)
 	if err != nil {
 		return
 	}
@@ -118,7 +119,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 
 	model := task.ModelName
 	if model == "" {
-		model = "qwen-turbo"
+		model = "qwen-long"
 	}
 	bodyMap := map[string]any{
 		"model": model,
@@ -138,13 +139,36 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 		"Authorization": "Bearer " + user.QwenApiKey,
 	}
 
+	method := "POST"
 	url := config.ModuleReqUrlMap[constant.Qwen]
-	resp, err := util.RequestHttp("POST", url, headers, body)
-	if err != nil {
+
+	if task.Timeout == 0 {
+		var resp []byte
+		resp, err = util.RequestHttp(method, url, headers, body)
+		if err == nil {
+			err = minio.UploadFile(ctx, bucket, task.OutputUrl, resp)
+		}
 		return
 	}
 
-	err = minio.UploadFile(bucket, task.OutputUrl, resp)
+	respCh := make(chan any)
+	util.GoSafe(func() {
+		util.AsyncRequestHttp(method, url, headers, body, respCh)
+	})
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(task.Timeout)*time.Second)
+	defer cancel()
+
+	select {
+	case resp := <-respCh:
+		if respErr, ok := resp.(error); ok {
+			err = respErr
+		}
+		err = minio.UploadFile(ctx, bucket, task.OutputUrl, resp.([]byte))
+	case <-ctx.Done():
+		log.Error("request qwen_api timeout, task_id=%v", task.Id)
+		err = fmt.Errorf("request qwen_api timeout")
+	}
 }
 
 func (m *QwenModule) HandleTaskResult() {
@@ -172,20 +196,39 @@ func NewQwenModule() *QwenModule {
 	}
 }
 
-func GetRespMessage(confMap map[string]any) MessageCarrier {
+func GetRespMessage(confMap map[string]any) *MessageCarrier {
 	output, ok := confMap["output"].(map[string]any)
 	if !ok {
-		return MessageCarrier{
-			Role: "assistant",
-		}
+		return &MessageCarrier{}
 	}
 	content, ok := output["text"].(string)
 	if !ok {
-		return MessageCarrier{
-			Role: "assistant",
-		}
+		return getLongRespMessage(output)
 	}
-	return MessageCarrier{
+	return &MessageCarrier{
+		Role:    "assistant",
+		Content: content,
+	}
+}
+
+func getLongRespMessage(output map[string]any) *MessageCarrier {
+	choices, ok := output["choices"].([]any)
+	if !ok || len(choices) == 0 {
+		return &MessageCarrier{}
+	}
+	choice, ok := choices[0].(map[string]any)
+	if !ok {
+		return &MessageCarrier{}
+	}
+	message, ok := choice["message"].(map[string]any)
+	if !ok {
+		return &MessageCarrier{}
+	}
+	content, ok := message["content"].(string)
+	if !ok {
+		return &MessageCarrier{}
+	}
+	return &MessageCarrier{
 		Role:    "assistant",
 		Content: content,
 	}

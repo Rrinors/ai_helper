@@ -13,7 +13,7 @@ func TestCreateTask(t *testing.T) {
 	Init()
 	inputUrl := "task#3_input.json"
 	outputUrl := "task#3_output.json"
-	task, err := CreateTask(1, constant.Qwen, "qwen-turbo", 10, inputUrl, outputUrl)
+	task, err := CreateTask(1, constant.Qwen, "qwen-long", 10, inputUrl, outputUrl, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
