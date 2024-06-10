@@ -1,6 +1,7 @@
 package minio
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -32,9 +33,9 @@ func TestUpload(t *testing.T) {
 	}
 }
 
-func TestCreateBucket(t *testing.T) {
+func TestInitBucket(t *testing.T) {
 	Init()
-	err := initBucket("test-create")
+	err := initBucket(context.Background(), "test-create")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,13 +8,13 @@ Currently supports dialogue service based on Qwen.
 
 **Requires Docker environment.**
 
-1.Start service.
+## Start service
 
 ```bash
 docker-compose up --build
 ```
 
-2.Register user with API-KEY.
+## Register
 
 ```bash
 curl -X POST "http://127.0.0.1:8888/api/v1/user/register" \
@@ -25,24 +25,23 @@ curl -X POST "http://127.0.0.1:8888/api/v1/user/register" \
 }'
 ```
 
-3.Interact.
+## Interact
 
 ```bash
 cd python
-python3 qwen_caller.py -u <user_id> [-m <model_name> --history <history_num>]
-
-# Type quit to exit.
+python3 qwen_caller.py -u <user_id> [-m <model_name>] [--history <history_num>]
+# Type 'quit' to exit.
 ```
 
 # Devlopment
 
-After updating the IDL, execute the following commands.
+## Update IDL
 
 ```bash
 make update
 ```
 
-Start service locally.
+## Local test
 
 ```bash
 make run

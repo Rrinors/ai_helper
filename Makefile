@@ -3,7 +3,7 @@ update:
 	&& ./hz_gen.sh
 run:
 	export MYSQL_HOST=localhost \
-	&& export MINIO_HOST=localhost \
+	MINIO_HOST=localhost \
 	&& chmod +x build.sh \
 	&& ./build.sh \
 	&& ./output/bootstrap.sh

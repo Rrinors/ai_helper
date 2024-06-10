@@ -24,8 +24,9 @@ func Init() {
 		log.Fatal("minio init failed, err=%v", err)
 	}
 	// init all buckets
+	ctx := context.Background()
 	for _, bucket := range config.MinioBucketMap {
-		if err = initBucket(bucket); err != nil {
+		if err = initBucket(ctx, bucket); err != nil {
 			log.Fatal("init bucket %v failed, err=%v", bucket, err)
 		}
 	}
@@ -55,8 +56,7 @@ func DownloadFile(bucket, object string) ([]byte, error) {
 	return data, nil
 }
 
-func initBucket(bucket string) error {
-	ctx := context.Background()
+func initBucket(ctx context.Context, bucket string) error {
 	exists, err := minioClient.BucketExists(ctx, bucket)
 	if err != nil {
 		return err
