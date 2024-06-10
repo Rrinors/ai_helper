@@ -166,6 +166,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 		}
 		err = minio.UploadFile(ctx, bucket, task.OutputUrl, resp.([]byte))
 	case <-ctx.Done():
+		log.Error("request qwen_api timeout, task_id=%v", task.Id)
 		err = fmt.Errorf("request qwen_api timeout")
 	}
 }

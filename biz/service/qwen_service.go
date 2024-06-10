@@ -104,7 +104,7 @@ func QueryQwenTaskResult(ctx context.Context, req *qwen.QwenApiRequest) *qwen.Qw
 		}
 		return &qwen.QwenApiResponse{
 			StatusCode: 202,
-			StatusMsg:  fmt.Sprintf("task not success, status=%v", task.Status),
+			StatusMsg:  fmt.Sprintf("task not finished, status=%v", task.Status),
 		}
 	}
 
