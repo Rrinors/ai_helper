@@ -1,6 +1,7 @@
 package minio
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -27,6 +28,14 @@ func TestUpload(t *testing.T) {
 	object := "test_input.json"
 	data := []byte(qwenInput)
 	err := UploadFile(bucket, object, data)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestInitBucket(t *testing.T) {
+	Init()
+	err := initBucket(context.Background(), "test-create")
 	if err != nil {
 		t.Fatal(err)
 	}

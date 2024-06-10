@@ -1,5 +1,5 @@
 #!/bin/bash
 CURDIR=$(cd $(dirname $0); pwd)
-BinaryName=hertz_service
+BinaryName=ai_helper
 echo "$CURDIR/bin/${BinaryName}"
 exec $CURDIR/bin/${BinaryName}

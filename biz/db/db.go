@@ -16,11 +16,11 @@ type Task struct {
 	UserId       uint64    `gorm:"index;notNull" json:"user_id"`
 	ModuleType   int       `gorm:"index;notNull" json:"module_type"`
 	Status       int       `gorm:"index;notNull" json:"status"`
-	ModelName    string    `gorm:"index" json:"model_name"`
+	ModelName    string    `json:"model_name"`
 	HistoryNum   int       `json:"history_num"`
 	InputUrl     string    `json:"input_url"`
 	OutputUrl    string    `json:"output_url"`
-	CreatedTime  time.Time `gorm:"index" json:"created_time"`
+	CreatedTime  time.Time `json:"created_time"`
 	FinishedTime time.Time `json:"finished_time"`
 }
 
@@ -33,12 +33,14 @@ type User struct {
 var DB *gorm.DB
 
 func Init() {
-	dsn := fmt.Sprintf(config.MysqlDSN, config.MysqlUser, config.MysqlPassword, config.MysqlServer, config.MysqlDBName)
+	dsn := fmt.Sprintf(config.MysqlDSN, config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDBName)
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("mysql init failed, err=%v", err)
 	}
+	// update tables
+	DB.AutoMigrate(User{}, Task{})
 	log.Info("mysql init success")
 }
 
@@ -106,7 +108,7 @@ func UpdateUser(user *User) error {
 func FetchUserHistoryTasks(userId uint64, moduleType int, history int) ([]*Task, error) {
 	db := DB.Model(Task{})
 	db.Where("user_id = ? AND module_type = ? AND status = ?", userId, moduleType, constant.TaskSuccess)
-	db.Order("created_time DESC")
+	db.Order("id DESC")
 	db.Limit(history)
 	var res []*Task
 	if err := db.Find(&res).Error; err != nil {
