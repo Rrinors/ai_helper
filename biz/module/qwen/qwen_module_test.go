@@ -12,9 +12,10 @@ import (
 )
 
 func TestGetRespMessage(t *testing.T) {
+	config.MinioHost = "localhost"
 	minio.Init()
 	bucket := config.MinioBucketMap[constant.Qwen]
-	conf, err := minio.DownloadFile(bucket, "test_output.json")
+	conf, err := minio.DownloadFile(bucket, "task#4_output.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +108,7 @@ func TestMakeRequestBody(t *testing.T) {
 	})
 
 	bodyMap := map[string]any{
-		"model": "qwen-turbo",
+		"model": "qwen-long",
 		"input": map[string]any{
 			"messages": messageList,
 		},

@@ -28,11 +28,18 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		}
 	}
 
+	if req.HistoryNum < 0 || req.Timeout < 0 {
+		return &qwen.QwenApiResponse{
+			StatusCode: 400,
+			StatusMsg:  "invalid task params value",
+		}
+	}
+
 	model := req.InputModel
 	if model == "" {
-		model = "qwen-turbo"
+		model = "qwen-long"
 	}
-	taskDO, err := db.CreateTask(req.UserId, constant.Qwen, model, int(req.HistoryNum), "", "")
+	taskDO, err := db.CreateTask(req.UserId, constant.Qwen, model, int(req.HistoryNum), "", "", int(req.Timeout))
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
@@ -88,6 +95,12 @@ func QueryQwenTaskResult(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		}
 	}
 	if task.Status != constant.TaskSuccess {
+		if task.Status == constant.TaskFailed {
+			return &qwen.QwenApiResponse{
+				StatusCode: 500,
+				StatusMsg:  "task failed",
+			}
+		}
 		return &qwen.QwenApiResponse{
 			StatusCode: 202,
 			StatusMsg:  fmt.Sprintf("task not success, status=%v", task.Status),

@@ -72,26 +72,23 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 		if !ok {
 			continue
 		}
-		messageList = append(messageList, MessageCarrier{
+		reqMessage := MessageCarrier{
 			Role:    role,
 			Content: content,
-		})
-		// add history response
-		respMessage := MessageCarrier{
-			Role: "assistant",
 		}
+		// add history response
 		conf, err = minio.DownloadFile(bucket, historyTask.OutputUrl)
 		if err != nil {
-			messageList = append(messageList, respMessage)
 			continue
 		}
 		err = sonic.Unmarshal(conf, &confMap)
 		if err != nil {
-			messageList = append(messageList, respMessage)
 			continue
 		}
-		respMessage = GetRespMessage(confMap)
-		messageList = append(messageList, respMessage)
+		respMessage := GetRespMessage(confMap)
+		if respMessage.Content != "" {
+			messageList = append(messageList, reqMessage, respMessage)
+		}
 	}
 	// add cur request
 	conf, err := minio.DownloadFile(bucket, task.InputUrl)
@@ -118,7 +115,7 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 
 	model := task.ModelName
 	if model == "" {
-		model = "qwen-turbo"
+		model = "qwen-long"
 	}
 	bodyMap := map[string]any{
 		"model": model,
@@ -175,15 +172,34 @@ func NewQwenModule() *QwenModule {
 func GetRespMessage(confMap map[string]any) MessageCarrier {
 	output, ok := confMap["output"].(map[string]any)
 	if !ok {
-		return MessageCarrier{
-			Role: "assistant",
-		}
+		return MessageCarrier{}
 	}
 	content, ok := output["text"].(string)
 	if !ok {
-		return MessageCarrier{
-			Role: "assistant",
-		}
+		return getLongRespMessage(output)
+	}
+	return MessageCarrier{
+		Role:    "assistant",
+		Content: content,
+	}
+}
+
+func getLongRespMessage(output map[string]any) MessageCarrier {
+	choices, ok := output["choices"].([]any)
+	if !ok || len(choices) == 0 {
+		return MessageCarrier{}
+	}
+	choice, ok := choices[0].(map[string]any)
+	if !ok {
+		return MessageCarrier{}
+	}
+	message, ok := choice["message"].(map[string]any)
+	if !ok {
+		return MessageCarrier{}
+	}
+	content, ok := message["content"].(string)
+	if !ok {
+		return MessageCarrier{}
 	}
 	return MessageCarrier{
 		Role:    "assistant",

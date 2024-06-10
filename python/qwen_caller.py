@@ -59,7 +59,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="qwen caller")
 
     parser.add_argument('-u', '--user', type=int, required=True, help='user id')
-    parser.add_argument('-m', '--model', type=str, default="qwen-turbo", help='qwen model')
+    parser.add_argument('-m', '--model', type=str, default="qwen-long", help='qwen model')
     parser.add_argument('--history', type=int, default=10, help='history num')
 
     args = parser.parse_args()
