@@ -5,10 +5,11 @@ import (
 	"ai_helper/biz/model/basic/user"
 	"ai_helper/package/constant"
 	"ai_helper/package/util"
+	"context"
 	"fmt"
 )
 
-func RegisterUser(req *user.UserApiRequest) *user.UserApiResponse {
+func RegisterUser(ctx context.Context, req *user.UserApiRequest) *user.UserApiResponse {
 	if req.Name == "" {
 		return &user.UserApiResponse{
 			StatusCode: 400,
@@ -34,7 +35,7 @@ func RegisterUser(req *user.UserApiRequest) *user.UserApiResponse {
 	}
 }
 
-func BindQwenApiKey(req *user.UserApiRequest) *user.UserApiResponse {
+func BindQwenApiKey(ctx context.Context, req *user.UserApiRequest) *user.UserApiResponse {
 	if req.Id == uint64(0) {
 		return &user.UserApiResponse{
 			StatusCode: 400,

@@ -18,7 +18,8 @@ def call(args):
             'input_model': args.model,
             'input_role': "user",
             'input_content': req,
-            'history_num': args.history
+            'history_num': args.history,
+            'timeout': args.timeout
         }
         resp = http_request("POST", SUBMIT_URI, data_map)
         if resp.status_code != 200:
@@ -61,6 +62,7 @@ if __name__ == "__main__":
     parser.add_argument('-u', '--user', type=int, required=True, help='user id')
     parser.add_argument('-m', '--model', type=str, default="qwen-long", help='qwen model')
     parser.add_argument('--history', type=int, default=10, help='history num')
+    parser.add_argument('-t', '--timeout', type=int, default=30, help='timeout')
 
     args = parser.parse_args()
     call(args)

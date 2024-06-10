@@ -33,17 +33,17 @@ func Init() {
 	log.Info("minio init success")
 }
 
-func UploadFile(bucket, object string, data []byte) error {
+func UploadFile(ctx context.Context, bucket, object string, data []byte) error {
 	reader := bytes.NewBuffer(data)
 	options := minio.PutObjectOptions{
 		ContentType: "application/json",
 	}
-	_, err := minioClient.PutObject(context.Background(), bucket, object, reader, int64(len(data)), options)
+	_, err := minioClient.PutObject(ctx, bucket, object, reader, int64(len(data)), options)
 	return err
 }
 
-func DownloadFile(bucket, object string) ([]byte, error) {
-	reader, err := minioClient.GetObject(context.Background(), bucket, object, minio.GetObjectOptions{})
+func DownloadFile(ctx context.Context, bucket, object string) ([]byte, error) {
+	reader, err := minioClient.GetObject(ctx, bucket, object, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err
 	}

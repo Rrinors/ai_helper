@@ -14,6 +14,7 @@ message QwenApiRequest {
     string input_role = 4; // input role
     string input_content = 5; // input content
     int32 history_num = 6; // input history num
+    int32 timeout = 7; // task timeout
 }
 
 message QwenApiResponse {

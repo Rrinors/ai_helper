@@ -15,7 +15,7 @@ func TestDownload(t *testing.T) {
 	Init()
 	bucket := "qwen"
 	object := "test_input.json"
-	data, err := DownloadFile(bucket, object)
+	data, err := DownloadFile(context.Background(), bucket, object)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func TestUpload(t *testing.T) {
 	bucket := "qwen"
 	object := "test_input.json"
 	data := []byte(qwenInput)
-	err := UploadFile(bucket, object, data)
+	err := UploadFile(context.Background(), bucket, object, data)
 	if err != nil {
 		t.Fatal(err)
 	}

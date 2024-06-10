@@ -8,12 +8,13 @@ import (
 	"ai_helper/package/config"
 	"ai_helper/package/constant"
 	"ai_helper/package/util"
+	"context"
 	"fmt"
 
 	"github.com/bytedance/sonic"
 )
 
-func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
+func SubmitQwenTask(ctx context.Context, req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	if req.UserId == uint64(0) {
 		return &qwen.QwenApiResponse{
 			StatusCode: 400,
@@ -65,7 +66,7 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		"content": req.InputContent,
 	}
 	inputConfig, _ := sonic.Marshal(inputMap)
-	err = minio.UploadFile(config.MinioBucketMap[constant.Qwen], taskDO.InputUrl, inputConfig)
+	err = minio.UploadFile(ctx, config.MinioBucketMap[constant.Qwen], taskDO.InputUrl, inputConfig)
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
@@ -79,7 +80,7 @@ func SubmitQwenTask(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	}
 }
 
-func QueryQwenTaskResult(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
+func QueryQwenTaskResult(ctx context.Context, req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 	if req.Id == uint64(0) {
 		return &qwen.QwenApiResponse{
 			StatusCode: 400,
@@ -107,7 +108,7 @@ func QueryQwenTaskResult(req *qwen.QwenApiRequest) *qwen.QwenApiResponse {
 		}
 	}
 
-	data, err := minio.DownloadFile(config.MinioBucketMap[constant.Qwen], task.OutputUrl)
+	data, err := minio.DownloadFile(ctx, config.MinioBucketMap[constant.Qwen], task.OutputUrl)
 	if err != nil {
 		return &qwen.QwenApiResponse{
 			StatusCode: 500,
