@@ -11,7 +11,7 @@ Currently supports dialogue service based on Qwen.
 ## Start service
 
 ```bash
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 ## Register

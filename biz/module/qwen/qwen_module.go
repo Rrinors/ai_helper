@@ -65,11 +65,11 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 			continue
 		}
 		role, ok := confMap["role"].(string)
-		if !ok {
+		if !ok || role == "" {
 			continue
 		}
 		content, ok := confMap["content"].(string)
-		if !ok {
+		if !ok || content == "" {
 			continue
 		}
 		reqMessage := MessageCarrier{
@@ -86,8 +86,8 @@ func (m *QwenModule) ProcessTask(task *db.Task) {
 			continue
 		}
 		respMessage := GetRespMessage(confMap)
-		if respMessage.Content != "" {
-			messageList = append(messageList, reqMessage, respMessage)
+		if respMessage != nil {
+			messageList = append(messageList, reqMessage, *respMessage)
 		}
 	}
 	// add cur request
@@ -169,39 +169,39 @@ func NewQwenModule() *QwenModule {
 	}
 }
 
-func GetRespMessage(confMap map[string]any) MessageCarrier {
+func GetRespMessage(confMap map[string]any) *MessageCarrier {
 	output, ok := confMap["output"].(map[string]any)
 	if !ok {
-		return MessageCarrier{}
+		return &MessageCarrier{}
 	}
 	content, ok := output["text"].(string)
 	if !ok {
 		return getLongRespMessage(output)
 	}
-	return MessageCarrier{
+	return &MessageCarrier{
 		Role:    "assistant",
 		Content: content,
 	}
 }
 
-func getLongRespMessage(output map[string]any) MessageCarrier {
+func getLongRespMessage(output map[string]any) *MessageCarrier {
 	choices, ok := output["choices"].([]any)
 	if !ok || len(choices) == 0 {
-		return MessageCarrier{}
+		return &MessageCarrier{}
 	}
 	choice, ok := choices[0].(map[string]any)
 	if !ok {
-		return MessageCarrier{}
+		return &MessageCarrier{}
 	}
 	message, ok := choice["message"].(map[string]any)
 	if !ok {
-		return MessageCarrier{}
+		return &MessageCarrier{}
 	}
 	content, ok := message["content"].(string)
 	if !ok {
-		return MessageCarrier{}
+		return &MessageCarrier{}
 	}
-	return MessageCarrier{
+	return &MessageCarrier{
 		Role:    "assistant",
 		Content: content,
 	}
