@@ -8,7 +8,7 @@ import (
 
 // db_config
 const (
-	MysqlDSN      = "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local"
+	MysqlDSN      = "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FShanghai"
 	MysqlUser     = "root"
 	MysqlPassword = "mysql-root-key"
 	MysqlDBName   = "ai_helper"
