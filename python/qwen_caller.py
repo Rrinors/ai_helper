@@ -47,7 +47,7 @@ def call(args):
             if resp_map['status_code'] != 202:
                 print(f"result failed, err_msg={resp_map['status_msg']}")
                 break
-            if time.time() - start > 30:
+            if time.time() - start > args.timeout:
                 print(f"result timeout")
                 break
         if not success:
